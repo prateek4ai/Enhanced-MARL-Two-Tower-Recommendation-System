@@ -1,0 +1,325 @@
+# Enhanced MARL Two-Tower Recommendation System - Base Configuration
+# This configuration integrates ContextGNN, HMARL, GNN Communication, and Fair Sampling
+
+experiment:
+  name: "enhanced_marl_rec"
+  version: "v2.0"
+  description: "State-of-the-art MARL recommendation with ContextGNN and fairness optimization"
+  seed: 42
+  device: "cuda"  # or "cpu", "auto"
+  
+# =============================================================================
+# DATASET CONFIGURATION
+# =============================================================================
+dataset:
+  name: "movielens-1m"
+  path: "data/ml-1m"
+  
+  # Data splits
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+  
+  # Data characteristics
+  num_users: 6040
+  num_items: 3706
+  num_interactions: 1000209
+  sparsity: 0.9553
+  
+  # Genre information
+  genres: ["Action", "Adventure", "Animation", "Children", "Comedy", "Crime", 
+           "Drama", "Fantasy", "Film-Noir", "Horror", "Musical", "Mystery", 
+           "Romance", "Sci-Fi", "Thriller", "War", "Western", "Documentary"]
+  num_genres: 18
+  
+  # Preprocessing
+  min_interactions_per_user: 20
+  min_interactions_per_item: 5
+  negative_sampling_ratio: 4
+  max_sequence_length: 50
+
+# =============================================================================
+# CONTEXTGNN USER TOWER CONFIGURATION
+# =============================================================================
+contextgnn:
+  # Architecture
+  input_dim: 128
+  hidden_dims: [256, 128, 64]
+  output_dim: 128
+  num_heads: 8
+  dropout: 0.2
+  
+  # Graph construction
+  k_neighbors: 20
+  edge_threshold: 0.1
+  temporal_decay: 0.95
+  
+  # Feature dimensions
+  user_embed_dim: 64
+  temporal_dim: 16
+  demographic_dim: 32
+
+# =============================================================================
+# HIERARCHICAL MULTI-AGENT RL CONTROLLER
+# =============================================================================
+marl_controller:
+  # Global coordinator
+  coordinator:
+    hidden_dim: 128
+    output_dim: 64
+    num_layers: 2
+    
+  # GNN Communication Layer
+  communication:
+    embed_dim: 64
+    num_heads: 4
+    num_layers: 2
+    message_dim: 32
+    dropout: 0.1
+    
+  # Genre Agents
+  genre_agents:
+    num_agents: 18  # One per genre
+    state_dim: 64
+    action_dim: 32
+    hidden_dims: [128, 64, 32]
+    
+  # Exposure Manager (GINI Agent)
+  exposure_manager:
+    input_dim: 18  # Number of genres
+    hidden_dims: [64, 32]
+    output_dim: 18
+    gini_threshold: 0.6
+
+# =============================================================================
+# ITEM TOWER CONFIGURATION
+# =============================================================================
+item_tower:
+  # Base encoder
+  base_encoder:
+    input_dim: 128
+    hidden_dims: [256, 128, 64]
+    output_dim: 128
+    dropout: 0.2
+    
+  # Genre-aware refinement
+  genre_encoders:
+    num_encoders: 18
+    input_dim: 64
+    hidden_dim: 32
+    output_dim: 32
+    
+  # Feature dimensions
+  item_embed_dim: 64
+  genre_embed_dim: 32
+  text_embed_dim: 384  # SBERT dimension
+  year_embed_dim: 16
+
+# =============================================================================
+# BIASED USER HISTORY SYNTHESIS (BUHS) MODULE
+# =============================================================================
+buhs:
+  enabled: true
+  embed_dim: 384
+  hidden_dim: 256
+  output_dim: 32
+  num_heads: 8
+  dropout: 0.2
+  alpha: 1.0  # Inverse popularity weighting strength
+  max_history_length: 50
+
+# =============================================================================
+# TRAINING CONFIGURATION
+# =============================================================================
+training:
+  # General training parameters
+  num_epochs: 100
+  batch_size: 256
+  num_workers: 8
+  pin_memory: true
+  
+  # Learning rates
+  base_lr: 1e-4
+  agent_lr: 1e-4
+  exposure_manager_lr: 1e-4
+  
+  # Optimizers
+  optimizer: "adam"
+  weight_decay: 1e-5
+  beta1: 0.9
+  beta2: 0.999
+  
+  # Learning rate scheduling
+  scheduler: "cosine"
+  warmup_steps: 1000
+  min_lr: 1e-6
+  
+  # Early stopping
+  patience: 10
+  min_delta: 0.001
+
+# =============================================================================
+# PPO CONFIGURATION
+# =============================================================================
+ppo:
+  # Core PPO parameters
+  clip_epsilon: 0.2
+  gamma: 0.99
+  gae_lambda: 0.95
+  ppo_epochs: 4
+  mini_batch_size: 64
+  
+  # Update frequency
+  update_frequency: 10  # episodes
+  target_kl: 0.01
+  
+  # Value function
+  value_loss_coef: 0.5
+  entropy_coef: 0.01
+  max_grad_norm: 0.5
+
+# =============================================================================
+# LOSS FUNCTION WEIGHTS
+# =============================================================================
+loss_weights:
+  # Primary losses
+  bpr_loss: 1.0          # Bayesian Personalized Ranking
+  ppo_loss: 0.5          # Multi-Agent PPO loss
+  
+  # Advanced losses
+  contrastive_loss: 0.3   # Long-tail contrastive learning
+  stable_rank_loss: 0.2   # Matrix stable rank regularization
+  
+  # Fairness penalties
+  gini_penalty: 0.4       # GINI coefficient penalty
+  exposure_penalty: 0.1   # Item exposure balance
+
+# =============================================================================
+# FAIR SAMPLING CONFIGURATION
+# =============================================================================
+fair_sampling:
+  enabled: true
+  method: "inverse_frequency"  # "uniform", "popularity_aware", "inverse_frequency"
+  temperature: 1.0
+  min_frequency: 1
+  update_frequency: 100  # Update item frequencies every N samples
+
+# =============================================================================
+# REWARD MODELS
+# =============================================================================
+rewards:
+  # Genre agent rewards
+  genre_agent:
+    hit_rate_weight: 0.4
+    ndcg_weight: 0.4
+    miss_penalty: 0.15
+    fairness_penalty: 0.05
+    
+  # Exposure manager rewards
+  exposure_manager:
+    gini_weight: 1.0
+    coverage_weight: 0.3
+    diversity_weight: 0.2
+    
+  # Long-tail promotion
+  long_tail:
+    tail_threshold: 0.2  # Bottom 20% of items by popularity
+    promotion_bonus: 0.5
+
+# =============================================================================
+# EVALUATION CONFIGURATION
+# =============================================================================
+evaluation:
+  # Metrics to compute
+  metrics: ["hr", "ndcg", "recall", "precision", "coverage", "gini", "diversity"]
+  
+  # Top-K values for evaluation
+  k_values: [1, 5, 10, 20, 50]
+  
+  # Evaluation frequency
+  eval_frequency: 5  # epochs
+  save_best_model: true
+  
+  # Fairness evaluation
+  fairness_metrics: ["gini_coefficient", "demographic_parity", "individual_fairness"]
+  
+  # Long-tail evaluation
+  tail_evaluation:
+    enabled: true
+    percentiles: [20, 50, 80]  # Bottom 20%, 50%, 80%
+
+# =============================================================================
+# LOGGING & MONITORING
+# =============================================================================
+logging:
+  # Basic logging
+  log_level: "INFO"
+  log_dir: "logs"
+  experiment_name: "${experiment.name}_${experiment.version}"
+  
+  # Weights & Biases
+  wandb:
+    enabled: true
+    project: "enhanced-marl-rec"
+    entity: null  # Your wandb username/organization
+    tags: ["marl", "contextgnn", "fairness", "two-tower"]
+    
+  # TensorBoard
+  tensorboard:
+    enabled: true
+    log_dir: "runs/${logging.experiment_name}"
+    
+  # Model checkpointing
+  checkpoints:
+    save_dir: "checkpoints"
+    save_frequency: 5  # epochs
+    max_checkpoints: 5
+
+# =============================================================================
+# INFERENCE CONFIGURATION
+# =============================================================================
+inference:
+  # Serving parameters
+  batch_size: 512
+  max_candidates: 1000
+  top_k: 50
+  
+  # Caching
+  cache_user_embeddings: true
+  cache_item_embeddings: true
+  cache_ttl: 3600  # seconds
+  
+  # Performance targets
+  target_latency_ms: 50  # 99th percentile
+  target_qps: 2000
+
+# =============================================================================
+# ABLATION STUDY CONFIGURATION
+# =============================================================================
+ablation:
+  components:
+    contextgnn: true
+    gnn_communication: true
+    hierarchical_control: true
+    fair_sampling: true
+    contrastive_learning: true
+    stable_rank_regularization: true
+    buhs_module: true
+    exposure_manager: true
+
+# =============================================================================
+# SYSTEM CONFIGURATION
+# =============================================================================
+system:
+  # Memory management
+  max_memory_gb: 32
+  gradient_checkpointing: false
+  mixed_precision: true
+  
+  # Distributed training
+  distributed: false
+  num_gpus: 1
+  
+  # Reproducibility
+  deterministic: true
+  benchmark: false

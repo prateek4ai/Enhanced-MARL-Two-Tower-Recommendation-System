@@ -1,0 +1,343 @@
+# MovieLens-1M Specific Configuration
+# Overrides base.yaml with dataset-specific optimizations
+
+# Inherit from base configuration
+defaults:
+  - base
+
+# Override experiment details
+experiment:
+  name: "enhanced_marl_rec_ml1m"
+  description: "Enhanced MARL system optimized for MovieLens-1M dataset"
+  tags: ["movielens-1m", "movies", "collaborative-filtering"]
+
+# =============================================================================
+# MOVIELENS-1M DATASET CONFIGURATION
+# =============================================================================
+dataset:
+  name: "movielens-1m"
+  path: "data/ml-1m"
+  
+  # MovieLens-1M specific statistics
+  num_users: 6040
+  num_items: 3706
+  num_interactions: 1000209
+  sparsity: 0.9553
+  
+  # Rating scale specific to MovieLens
+  rating_scale: [1, 2, 3, 4, 5]
+  implicit_threshold: 4  # Ratings >= 4 treated as positive
+  
+  # MovieLens genre distribution (actual counts)
+  genre_distribution:
+    Drama: 4361        # 25.8%
+    Comedy: 3995       # 23.6%
+    Thriller: 1894     # 11.2%
+    Action: 1828       # 10.8%
+    Romance: 1596      # 9.4%
+    Adventure: 1263    # 7.5%
+    Crime: 1199        # 7.1%
+    Sci-Fi: 980        # 5.8%
+    Horror: 978        # 5.8%
+    Fantasy: 698       # 4.1%
+    Children: 611      # 3.6%
+    Animation: 447     # 2.6%
+    War: 382          # 2.3%
+    Musical: 334       # 2.0%
+    Western: 168       # 1.0%
+    Film-Noir: 87      # 0.5%
+    Documentary: 127   # 0.8%
+    Mystery: 106       # 0.6%
+  
+  # Genre-specific parameters
+  major_genres: ["Drama", "Comedy", "Thriller", "Action", "Romance"]  # Top 5
+  minor_genres: ["Western", "Film-Noir", "Documentary", "Mystery"]     # Bottom 4
+  
+  # MovieLens-specific preprocessing
+  min_interactions_per_user: 20
+  min_interactions_per_item: 5
+  max_user_history: 200
+  
+  # File paths
+  ratings_file: "ratings.dat"
+  users_file: "users.dat"
+  movies_file: "movies.dat"
+  
+  # Data splits optimized for MovieLens
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+
+# =============================================================================
+# CONTEXTGNN OPTIMIZATIONS FOR MOVIELENS
+# =============================================================================
+contextgnn:
+  # Optimized for MovieLens user behavior patterns
+  input_dim: 128
+  hidden_dims: [256, 128, 64]
+  output_dim: 128
+  num_heads: 8
+  dropout: 0.15  # Reduced for smaller dataset
+  
+  # MovieLens-specific graph construction
+  k_neighbors: 15  # Reduced for sparser data
+  edge_threshold: 0.15
+  temporal_decay: 0.9  # Higher decay for older movies
+  
+  # User demographic encoding (MovieLens specific)
+  age_bins: 7  # Age groups: 1, 18, 25, 35, 45, 50, 56
+  occupation_categories: 21  # K-12 student to retired
+  gender_categories: 2  # M, F
+
+# =============================================================================
+# MARL CONTROLLER TUNED FOR MOVIE GENRES
+# =============================================================================
+marl_controller:
+  # Coordinator optimized for movie recommendation
+  coordinator:
+    hidden_dim: 96  # Slightly smaller for MovieLens scale
+    output_dim: 64
+    num_layers: 2
+    
+  # Genre-specific agent configurations
+  genre_agents:
+    num_agents: 18
+    state_dim: 64
+    action_dim: 32
+    hidden_dims: [96, 64, 32]
+    
+    # Genre-specific learning rates (major genres learn faster)
+    genre_lr_multipliers:
+      Drama: 1.2
+      Comedy: 1.2
+      Thriller: 1.1
+      Action: 1.1
+      Romance: 1.1
+      Adventure: 1.0
+      Crime: 1.0
+      Sci-Fi: 0.9
+      Horror: 0.9
+      Fantasy: 0.8
+      Children: 0.8
+      Animation: 0.8
+      War: 0.7
+      Musical: 0.7
+      Western: 0.6      # Slower learning for rare genres
+      Film-Noir: 0.6
+      Documentary: 0.6
+      Mystery: 0.6
+  
+  # Exposure manager tuned for movie distribution
+  exposure_manager:
+    input_dim: 18
+    hidden_dims: [64, 32]
+    output_dim: 18
+    gini_threshold: 0.55  # More lenient for MovieLens
+
+# =============================================================================
+# ITEM TOWER OPTIMIZED FOR MOVIES
+# =============================================================================
+item_tower:
+  # Movie-specific features
+  base_encoder:
+    input_dim: 512  # ID + genres + year + title embedding
+    hidden_dims: [384, 256, 128]
+    output_dim: 128
+    dropout: 0.2
+  
+  # Movie release year encoding
+  year_range: [1919, 2000]  # MovieLens-1M range
+  year_embed_dim: 16
+  
+  # Movie title processing (SBERT)
+  title_processing:
+    max_length: 64
+    embedding_model: "all-MiniLM-L6-v2"
+    freeze_embeddings: true
+
+# =============================================================================
+# TRAINING OPTIMIZATIONS FOR MOVIELENS
+# =============================================================================
+training:
+  # Optimized for MovieLens-1M size
+  num_epochs: 50
+  batch_size: 512  # Larger batch for better convergence
+  num_workers: 4
+  
+  # Learning rates tuned for MovieLens
+  base_lr: 2e-4  # Higher LR for smaller dataset
+  agent_lr: 2e-4
+  exposure_manager_lr: 1e-4
+  
+  # Scheduler optimized for MovieLens
+  scheduler: "cosine"
+  warmup_steps: 500
+  min_lr: 1e-6
+  
+  # Early stopping for MovieLens
+  patience: 8
+  min_delta: 0.0005
+
+# =============================================================================
+# PPO TUNED FOR MOVIE RECOMMENDATION
+# =============================================================================
+ppo:
+  # MovieLens-specific PPO parameters
+  clip_epsilon: 0.15  # Slightly more conservative
+  gamma: 0.95  # Shorter horizon for movie preferences
+  gae_lambda: 0.9
+  ppo_epochs: 3
+  mini_batch_size: 128
+  
+  update_frequency: 8  # More frequent updates
+  target_kl: 0.015
+
+# =============================================================================
+# LOSS WEIGHTS OPTIMIZED FOR MOVIELENS
+# =============================================================================
+loss_weights:
+  # Primary losses
+  bpr_loss: 1.0
+  ppo_loss: 0.4  # Reduced for smaller dataset
+  
+  # Advanced losses
+  contrastive_loss: 0.4  # Higher for long-tail movies
+  stable_rank_loss: 0.3
+  
+  # Fairness penalties (important for movie diversity)
+  gini_penalty: 0.6
+  exposure_penalty: 0.2
+
+# =============================================================================
+# FAIR SAMPLING FOR MOVIE GENRES
+# =============================================================================
+fair_sampling:
+  enabled: true
+  method: "genre_aware_inverse_frequency"
+  temperature: 0.8  # More aggressive for movies
+  
+  # Genre-specific sampling weights
+  genre_importance:
+    major_genres_boost: 1.2
+    minor_genres_boost: 2.0  # Strong boost for rare genres
+    
+  update_frequency: 50
+
+# =============================================================================
+# REWARDS TUNED FOR MOVIE RECOMMENDATION
+# =============================================================================
+rewards:
+  # Genre agent rewards optimized for movies
+  genre_agent:
+    hit_rate_weight: 0.35
+    ndcg_weight: 0.35
+    coverage_weight: 0.15  # Important for movie diversity
+    miss_penalty: 0.10
+    fairness_penalty: 0.05
+    
+  # Movie-specific long-tail promotion
+  long_tail:
+    tail_threshold: 0.3  # Top 70% vs bottom 30%
+    old_movie_bonus: 0.3  # Boost for pre-1990 movies
+    rare_genre_bonus: 0.5  # Extra bonus for Western, Film-Noir, etc.
+
+# =============================================================================
+# EVALUATION METRICS FOR MOVIES
+# =============================================================================
+evaluation:
+  # Movie-specific evaluation
+  metrics: ["hr", "ndcg", "recall", "precision", "coverage", "gini", 
+           "diversity", "novelty", "serendipity"]
+  
+  k_values: [1, 5, 10, 20]
+  eval_frequency: 3
+  
+  # Movie-specific fairness evaluation
+  fairness_metrics: ["genre_gini", "popularity_bias", "temporal_fairness"]
+  
+  # Long-tail evaluation for movies
+  tail_evaluation:
+    enabled: true
+    percentiles: [20, 50, 80]
+    year_analysis: true  # Analyze by movie release year
+    genre_analysis: true  # Per-genre long-tail analysis
+
+# =============================================================================
+# MOVIELENS BASELINES FOR COMPARISON
+# =============================================================================
+baselines:
+  collaborative_filtering:
+    expected_hr10: 0.42
+    expected_ndcg10: 0.25
+    
+  matrix_factorization:
+    expected_hr10: 0.48
+    expected_ndcg10: 0.31
+    
+  neural_collaborative_filtering:
+    expected_hr10: 0.52
+    expected_ndcg10: 0.34
+    
+  # Our target performance
+  enhanced_marl_target:
+    hr10: 0.58  # +12% improvement
+    ndcg10: 0.39  # +15% improvement
+    gini_coefficient: 0.45  # -25% from baseline 0.6
+
+# =============================================================================
+# MOVIELENS-SPECIFIC ABLATION STUDIES
+# =============================================================================
+ablation:
+  components:
+    contextgnn: true
+    gnn_communication: true
+    hierarchical_control: true
+    fair_sampling: true
+    contrastive_learning: true
+    stable_rank_regularization: true
+    buhs_module: true
+    exposure_manager: true
+    genre_specialization: true
+    temporal_features: true
+    demographic_features: true
+  
+  # MovieLens-specific experiments
+  experiments:
+    genre_impact: true  # Effect of different genre agents
+    temporal_decay: true  # Impact of movie age on recommendations  
+    user_demographics: true  # Role of age/occupation/gender
+    popularity_bias: true  # Before/after bias mitigation
+
+# =============================================================================
+# PRODUCTION SETTINGS FOR MOVIELENS DEPLOYMENT
+# =============================================================================
+inference:
+  # MovieLens-scale serving
+  batch_size: 256
+  max_candidates: 500  # Smaller candidate set
+  top_k: 20
+  
+  # Caching optimized for movie recommendations
+  cache_user_embeddings: true
+  cache_item_embeddings: true
+  cache_ttl: 7200  # 2 hours (movies change less frequently)
+  
+  # Performance targets for MovieLens
+  target_latency_ms: 30  # Lower latency target
+  target_qps: 1000
+
+# =============================================================================
+# LOGGING SPECIFIC TO MOVIELENS EXPERIMENTS
+# =============================================================================
+logging:
+  wandb:
+    project: "enhanced-marl-rec-movielens"
+    tags: ["movielens-1m", "movies", "fairness", "long-tail"]
+    
+  # MovieLens-specific metrics to track
+  custom_metrics:
+    - "genre_coverage"
+    - "temporal_diversity"
+    - "popularity_distribution"
+    - "user_demographic_fairness"
+    - "rare_genre_exposure"
