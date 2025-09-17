@@ -1,0 +1,1056 @@
+# Enhanced MARL Two-Tower Recommendation System - Ablation Study Configuration
+# Systematic evaluation of individual components and their contributions
+
+# Inherit from base configuration
+defaults:
+  - base
+
+# Override experiment details for ablation studies
+experiment:
+  name: "enhanced_marl_rec_ablation"
+  description: "Comprehensive ablation study of MARL recommendation components"
+  tags: ["ablation", "component-analysis", "systematic-evaluation"]
+
+# =============================================================================
+# ABLATION STUDY MATRIX
+# =============================================================================
+ablation_matrix:
+  # Define all possible ablation configurations
+  configurations:
+    
+    # Baseline configurations
+    baseline_two_tower:
+      description: "Traditional two-tower without any enhancements"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: false
+        genre_specialization: false
+    
+    baseline_marl:
+      description: "Basic MARL without advanced optimizations"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    # Individual component ablations
+    contextgnn_only:
+      description: "ContextGNN user tower only"
+      components:
+        contextgnn: true
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: false
+        genre_specialization: false
+    
+    gnn_comm_only:
+      description: "GNN communication layer only"
+      components:
+        contextgnn: false
+        gnn_communication: true
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    hierarchical_only:
+      description: "Hierarchical control only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: true
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    fair_sampling_only:
+      description: "Fair sampling only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: true
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    contrastive_only:
+      description: "Contrastive learning only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: true
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    stable_rank_only:
+      description: "Stable rank regularization only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: true
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    buhs_only:
+      description: "BUHS module only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: true
+        exposure_manager: true
+        genre_specialization: true
+    
+    # Combination ablations
+    contextgnn_plus_gnn:
+      description: "ContextGNN + GNN communication"
+      components:
+        contextgnn: true
+        gnn_communication: true
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    fairness_combo:
+      description: "All fairness components"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: true
+        contrastive_learning: true
+        stable_rank_regularization: true
+        buhs_module: true
+        exposure_manager: true
+        genre_specialization: true
+    
+    architecture_combo:
+      description: "All architectural improvements"
+      components:
+        contextgnn: true
+        gnn_communication: true
+        hierarchical_control: true
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    # Full system
+    full_system:
+      description: "All components enabled"
+      components:
+        contextgnn: true
+        gnn_communication: true
+        hierarchical_control: true
+        fair_sampling: true
+        contrastive_learning: true
+        stable_rank_regularization: true
+        buhs_module: true
+        exposure_manager: true
+        genre_specialization: true
+
+# =============================================================================
+# LOSS FUNCTION ABLATION STUDIES
+# =============================================================================
+loss_ablations:
+  # Different loss weight configurations
+  bpr_only:
+    description: "BPR loss only"
+    weights:
+      bpr_loss: 1.0
+      ppo_loss: 0.0
+      contrastive_loss: 0.0
+      stable_rank_loss: 0.0
+      gini_penalty: 0.0
+      exposure_penalty: 0.0
+  
+  rl_focused:
+    description: "RL losses emphasized"
+    weights:
+      bpr_loss: 0.5
+      ppo_loss: 1.0
+      contrastive_loss: 0.0
+      stable_rank_loss: 0.0
+      gini_penalty: 0.3
+      exposure_penalty: 0.1
+  
+  fairness_focused:
+    description: "Fairness losses emphasized"
+    weights:
+      bpr_loss: 1.0
+      ppo_loss: 0.3
+      contrastive_loss: 0.5
+      stable_rank_loss: 0.5
+      gini_penalty: 0.8
+      exposure_penalty: 0.3
+  
+  balanced_losses:
+    description: "Balanced loss configuration"
+    weights:
+      bpr_loss: 1.0
+      ppo_loss: 0.5
+      contrastive_loss: 0.3
+      stable_rank_loss: 0.2
+      gini_penalty: 0.4
+      exposure_penalty: 0.1
+
+# =============================================================================
+# HYPERPARAMETER SENSITIVITY ANALYSIS
+# =============================================================================
+hyperparameter_studies:
+  
+  # Learning rate sensitivity
+  learning_rates:
+    base_lrs: [1e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3]
+    agent_lrs: [1e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3]
+    
+  # Batch size impact
+  batch_sizes: [64, 128, 256, 512, 1024]
+  
+  # PPO hyperparameters
+  ppo_params:
+    clip_epsilons: [0.1, 0.15, 0.2, 0.25, 0.3]
+    gammas: [0.9, 0.95, 0.99, 0.995]
+    gae_lambdas: [0.8, 0.9, 0.95, 0.98]
+  
+  # ContextGNN parameters
+  contextgnn_params:
+    num_heads: [4, 6, 8, 12, 16]
+    k_neighbors: [5, 10, 15, 20, 25, 30]
+    dropouts: [0.1, 0.15, 0.2, 0.25, 0.3]
+  
+  # BUHS parameters
+  buhs_params:
+    alphas: [0.5, 0.8, 1.0, 1.2, 1.5, 2.0]
+    output_dims: [16, 24, 32, 48, 64]
+
+# =============================================================================
+# GENRE-SPECIFIC ABLATION STUDIES
+# =============================================================================
+genre_ablations:
+  
+  # Impact of different numbers of genre agents
+  agent_count_study:
+    configurations:
+      single_agent: 1
+      major_genres_only: 5  # Top 5 genres
+      top_half: 9  # Top 50% of genres
+      all_genres: 18  # All genres
+  
+  # Genre grouping strategies
+  genre_grouping:
+    by_popularity:
+      high_pop: ["Drama", "Comedy", "Thriller", "Action", "Romance"]
+      medium_pop: ["Adventure", "Crime", "Sci-Fi", "Horror", "Fantasy"]
+      low_pop: ["Children", "Animation", "War", "Musical", "Western", "Film-Noir", "Documentary", "Mystery"]
+    
+    by_similarity:
+      action_adventure: ["Action", "Adventure", "Thriller", "War"]
+      entertainment: ["Comedy", "Musical", "Children", "Animation"]
+      serious_drama: ["Drama", "Crime", "Film-Noir", "Documentary"]
+      fantasy_scifi: ["Sci-Fi", "Fantasy", "Horror"]
+      romance_related: ["Romance", "Musical"]
+      niche: ["Western", "Mystery"]
+  
+  # Genre-specific reward tuning
+  reward_variations:
+    uniform_rewards: true  # Same rewards for all genres
+    popularity_based: true  # Higher rewards for popular genres
+    fairness_based: true  # Higher rewards for underrepresented genres
+
+# =============================================================================
+# SAMPLING STRATEGY ABLATIONS
+# =============================================================================
+sampling_ablations:
+  
+  # Different negative sampling methods
+  negative_sampling:
+    uniform:
+      method: "uniform"
+      description: "Uniform random sampling"
+    
+    popularity_aware:
+      method: "popularity_aware"
+      description: "Popularity-proportional sampling"
+      popularity_alpha: 0.75
+    
+    inverse_frequency:
+      method: "inverse_frequency" 
+      description: "Inverse frequency sampling"
+      temperature: 1.0
+    
+    genre_balanced:
+      method: "genre_aware_inverse_frequency"
+      description: "Genre-balanced inverse frequency"
+      temperature: 0.8
+  
+  # Negative sampling ratios
+  sampling_ratios: [1, 2, 4, 8, 16]
+
+# =============================================================================
+# ARCHITECTURAL VARIATIONS
+# =============================================================================
+architecture_ablations:
+  
+  # ContextGNN vs traditional encoders
+  user_encoders:
+    traditional_mlp:
+      type: "mlp"
+      hidden_dims: [256, 128, 64]
+    
+    lstm_encoder:
+      type: "lstm"
+      hidden_size: 128
+      num_layers: 2
+    
+    transformer_encoder:
+      type: "transformer" 
+      d_model: 128
+      nhead: 8
+      num_layers: 3
+    
+    contextgnn:
+      type: "contextgnn"
+      num_heads: 8
+      num_layers: 2
+  
+  # Communication mechanisms
+  agent_communication:
+    no_communication:
+      enabled: false
+    
+    broadcast:
+      type: "broadcast"
+      message_dim: 32
+    
+    attention_based:
+      type: "attention"
+      num_heads: 4
+      message_dim: 32
+    
+    gnn_based:
+      type: "gnn"
+      num_heads: 4
+      num_layers: 2
+
+# =============================================================================
+# EVALUATION CONFIGURATIONS FOR ABLATIONS
+# =============================================================================
+evaluation_config:
+  
+  # Metrics to track for each ablation
+  primary_metrics:
+    accuracy: ["hr@1", "hr@5", "hr@10", "hr@20", "ndcg@5", "ndcg@10", "ndcg@20"]
+    fairness: ["gini_coefficient", "coverage@20", "diversity@10", "tail_percentage@10"]
+    efficiency: ["training_time", "inference_latency", "memory_usage", "convergence_epochs"]
+  
+  # Statistical significance testing
+  significance_testing:
+    enabled: true
+    method: "wilcoxon"  # or "t_test"
+    alpha: 0.05
+    num_runs: 5  # Multiple runs for statistical reliability
+  
+  # Comparison baselines
+  baselines:
+    - "baseline_two_tower"
+    - "baseline_marl" 
+    - "neural_collaborative_filtering"
+  
+  # Cross-validation
+  cross_validation:
+    enabled: true
+    folds: 5
+    stratified: true
+
+# =============================================================================
+# EXPERIMENTAL SCHEDULE
+# =============================================================================
+experiment_schedule:
+  
+  # Phase 1: Individual components (Week 1-2)
+  phase1_individual:
+    experiments:
+      - "contextgnn_only"
+      - "gnn_comm_only"
+      - "hierarchical_only"
+      - "fair_sampling_only"
+      - "contrastive_only"
+      - "stable_rank_only"
+      - "buhs_only"
+    parallel_runs: 3
+    estimated_time: "2 weeks"
+  
+  # Phase 2: Component combinations (Week 3-4)
+  phase2_combinations:
+    experiments:
+      - "contextgnn_plus_gnn"
+      - "fairness_combo"
+      - "architecture_combo"
+    parallel_runs: 2
+    estimated_time: "2 weeks"
+  
+  # Phase 3: Loss function studies (Week 5)
+  phase3_losses:
+    experiments:
+      - "bpr_only"
+      - "rl_focused"
+      - "fairness_focused"
+      - "balanced_losses"
+    parallel_runs: 4
+    estimated_time: "1 week"
+  
+  # Phase 4: Hyperparameter sensitivity (Week 6-7)
+  phase4_hyperparams:
+    experiments: "hyperparameter_studies"
+    parallel_runs: 8
+    estimated_time: "2 weeks"
+  
+  # Phase 5: Full system validation (Week 8)
+  phase5_full:
+    experiments:
+      - "full_system"
+    num_runs: 10  # Multiple runs for robust results
+    estimated_time: "1 week"
+
+# =============================================================================
+# RESOURCE ALLOCATION
+# =============================================================================
+resource_management:
+  
+  # Computational resources per experiment
+  resources_per_experiment:
+    gpu_memory: "8GB"
+    cpu_cores: 4
+    estimated_runtime: "6-12 hours"
+  
+  # Parallel execution strategy
+  parallelization:
+    max_concurrent_experiments: 4
+    gpu_allocation: "round_robin"
+    cpu_allocation: "shared"
+  
+  # Result storage
+  storage:
+    results_dir: "ablation_results"
+    checkpoint_frequency: "every_epoch"
+    log_frequency: "every_100_steps"
+
+# =============================================================================
+# ANALYSIS AND REPORTING
+# =============================================================================
+analysis_config:
+  
+  # Automated analysis
+  automated_analysis:
+    component_importance: true  # Rank components by impact
+    interaction_effects: true   # Analyze component interactions
+    performance_tradeoffs: true # Accuracy vs fairness tradeoffs
+    efficiency_analysis: true   # Training/inference efficiency
+  
+  # Visualization
+  plots:
+    component_contribution: true
+    performance_radar_charts: true
+    convergence_curves: true
+    fairness_vs_accuracy_scatter: true
+    statistical_significance_heatmap: true
+  
+  # Report generation
+  reports:
+    summary_table: true
+    detailed_analysis: true
+    recommendations: true
+    future_directions: true
+
+# =============================================================================
+# SUCCESS CRITERIA
+# =============================================================================
+success_criteria:
+  
+  # Minimum performance thresholds
+  performance_thresholds:
+    hr10_improvement: 0.10  # 10% improvement over baseline
+    ndcg10_improvement: 0.10
+    gini_reduction: 0.15     # 15% reduction in GINI coefficient
+    
+  # Statistical significance requirements
+  significance_requirements:
+    p_value_threshold: 0.05
+    effect_size_threshold: 0.2  # Cohen's d
+    
+  # Robustness requirements
+  robustness:
+    consistent_across_runs: true
+    stable_hyperparameters: true
+    generalizable_improvements: true
+# Enhanced MARL Two-Tower Recommendation System - Ablation Study Configuration
+# Systematic evaluation of individual components and their contributions
+
+# Inherit from base configuration
+defaults:
+  - base
+
+# Override experiment details for ablation studies
+experiment:
+  name: "enhanced_marl_rec_ablation"
+  description: "Comprehensive ablation study of MARL recommendation components"
+  tags: ["ablation", "component-analysis", "systematic-evaluation"]
+
+# =============================================================================
+# ABLATION STUDY MATRIX
+# =============================================================================
+ablation_matrix:
+  # Define all possible ablation configurations
+  configurations:
+    
+    # Baseline configurations
+    baseline_two_tower:
+      description: "Traditional two-tower without any enhancements"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: false
+        genre_specialization: false
+    
+    baseline_marl:
+      description: "Basic MARL without advanced optimizations"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    # Individual component ablations
+    contextgnn_only:
+      description: "ContextGNN user tower only"
+      components:
+        contextgnn: true
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: false
+        genre_specialization: false
+    
+    gnn_comm_only:
+      description: "GNN communication layer only"
+      components:
+        contextgnn: false
+        gnn_communication: true
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    hierarchical_only:
+      description: "Hierarchical control only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: true
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    fair_sampling_only:
+      description: "Fair sampling only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: true
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    contrastive_only:
+      description: "Contrastive learning only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: true
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    stable_rank_only:
+      description: "Stable rank regularization only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: true
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    buhs_only:
+      description: "BUHS module only"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: true
+        exposure_manager: true
+        genre_specialization: true
+    
+    # Combination ablations
+    contextgnn_plus_gnn:
+      description: "ContextGNN + GNN communication"
+      components:
+        contextgnn: true
+        gnn_communication: true
+        hierarchical_control: false
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    fairness_combo:
+      description: "All fairness components"
+      components:
+        contextgnn: false
+        gnn_communication: false
+        hierarchical_control: false
+        fair_sampling: true
+        contrastive_learning: true
+        stable_rank_regularization: true
+        buhs_module: true
+        exposure_manager: true
+        genre_specialization: true
+    
+    architecture_combo:
+      description: "All architectural improvements"
+      components:
+        contextgnn: true
+        gnn_communication: true
+        hierarchical_control: true
+        fair_sampling: false
+        contrastive_learning: false
+        stable_rank_regularization: false
+        buhs_module: false
+        exposure_manager: true
+        genre_specialization: true
+    
+    # Full system
+    full_system:
+      description: "All components enabled"
+      components:
+        contextgnn: true
+        gnn_communication: true
+        hierarchical_control: true
+        fair_sampling: true
+        contrastive_learning: true
+        stable_rank_regularization: true
+        buhs_module: true
+        exposure_manager: true
+        genre_specialization: true
+
+# =============================================================================
+# LOSS FUNCTION ABLATION STUDIES
+# =============================================================================
+loss_ablations:
+  # Different loss weight configurations
+  bpr_only:
+    description: "BPR loss only"
+    weights:
+      bpr_loss: 1.0
+      ppo_loss: 0.0
+      contrastive_loss: 0.0
+      stable_rank_loss: 0.0
+      gini_penalty: 0.0
+      exposure_penalty: 0.0
+  
+  rl_focused:
+    description: "RL losses emphasized"
+    weights:
+      bpr_loss: 0.5
+      ppo_loss: 1.0
+      contrastive_loss: 0.0
+      stable_rank_loss: 0.0
+      gini_penalty: 0.3
+      exposure_penalty: 0.1
+  
+  fairness_focused:
+    description: "Fairness losses emphasized"
+    weights:
+      bpr_loss: 1.0
+      ppo_loss: 0.3
+      contrastive_loss: 0.5
+      stable_rank_loss: 0.5
+      gini_penalty: 0.8
+      exposure_penalty: 0.3
+  
+  balanced_losses:
+    description: "Balanced loss configuration"
+    weights:
+      bpr_loss: 1.0
+      ppo_loss: 0.5
+      contrastive_loss: 0.3
+      stable_rank_loss: 0.2
+      gini_penalty: 0.4
+      exposure_penalty: 0.1
+
+# =============================================================================
+# HYPERPARAMETER SENSITIVITY ANALYSIS
+# =============================================================================
+hyperparameter_studies:
+  
+  # Learning rate sensitivity
+  learning_rates:
+    base_lrs: [1e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3]
+    agent_lrs: [1e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3]
+    
+  # Batch size impact
+  batch_sizes: [64, 128, 256, 512, 1024]
+  
+  # PPO hyperparameters
+  ppo_params:
+    clip_epsilons: [0.1, 0.15, 0.2, 0.25, 0.3]
+    gammas: [0.9, 0.95, 0.99, 0.995]
+    gae_lambdas: [0.8, 0.9, 0.95, 0.98]
+  
+  # ContextGNN parameters
+  contextgnn_params:
+    num_heads: [4, 6, 8, 12, 16]
+    k_neighbors: [5, 10, 15, 20, 25, 30]
+    dropouts: [0.1, 0.15, 0.2, 0.25, 0.3]
+  
+  # BUHS parameters
+  buhs_params:
+    alphas: [0.5, 0.8, 1.0, 1.2, 1.5, 2.0]
+    output_dims: [16, 24, 32, 48, 64]
+
+# =============================================================================
+# GENRE-SPECIFIC ABLATION STUDIES
+# =============================================================================
+genre_ablations:
+  
+  # Impact of different numbers of genre agents
+  agent_count_study:
+    configurations:
+      single_agent: 1
+      major_genres_only: 5  # Top 5 genres
+      top_half: 9  # Top 50% of genres
+      all_genres: 18  # All genres
+  
+  # Genre grouping strategies
+  genre_grouping:
+    by_popularity:
+      high_pop: ["Drama", "Comedy", "Thriller", "Action", "Romance"]
+      medium_pop: ["Adventure", "Crime", "Sci-Fi", "Horror", "Fantasy"]
+      low_pop: ["Children", "Animation", "War", "Musical", "Western", "Film-Noir", "Documentary", "Mystery"]
+    
+    by_similarity:
+      action_adventure: ["Action", "Adventure", "Thriller", "War"]
+      entertainment: ["Comedy", "Musical", "Children", "Animation"]
+      serious_drama: ["Drama", "Crime", "Film-Noir", "Documentary"]
+      fantasy_scifi: ["Sci-Fi", "Fantasy", "Horror"]
+      romance_related: ["Romance", "Musical"]
+      niche: ["Western", "Mystery"]
+  
+  # Genre-specific reward tuning
+  reward_variations:
+    uniform_rewards: true  # Same rewards for all genres
+    popularity_based: true  # Higher rewards for popular genres
+    fairness_based: true  # Higher rewards for underrepresented genres
+
+# =============================================================================
+# SAMPLING STRATEGY ABLATIONS
+# =============================================================================
+sampling_ablations:
+  
+  # Different negative sampling methods
+  negative_sampling:
+    uniform:
+      method: "uniform"
+      description: "Uniform random sampling"
+    
+    popularity_aware:
+      method: "popularity_aware"
+      description: "Popularity-proportional sampling"
+      popularity_alpha: 0.75
+    
+    inverse_frequency:
+      method: "inverse_frequency" 
+      description: "Inverse frequency sampling"
+      temperature: 1.0
+    
+    genre_balanced:
+      method: "genre_aware_inverse_frequency"
+      description: "Genre-balanced inverse frequency"
+      temperature: 0.8
+  
+  # Negative sampling ratios
+  sampling_ratios: [1, 2, 4, 8, 16]
+
+# =============================================================================
+# ARCHITECTURAL VARIATIONS
+# =============================================================================
+architecture_ablations:
+  
+  # ContextGNN vs traditional encoders
+  user_encoders:
+    traditional_mlp:
+      type: "mlp"
+      hidden_dims: [256, 128, 64]
+    
+    lstm_encoder:
+      type: "lstm"
+      hidden_size: 128
+      num_layers: 2
+    
+    transformer_encoder:
+      type: "transformer" 
+      d_model: 128
+      nhead: 8
+      num_layers: 3
+    
+    contextgnn:
+      type: "contextgnn"
+      num_heads: 8
+      num_layers: 2
+  
+  # Communication mechanisms
+  agent_communication:
+    no_communication:
+      enabled: false
+    
+    broadcast:
+      type: "broadcast"
+      message_dim: 32
+    
+    attention_based:
+      type: "attention"
+      num_heads: 4
+      message_dim: 32
+    
+    gnn_based:
+      type: "gnn"
+      num_heads: 4
+      num_layers: 2
+
+# =============================================================================
+# EVALUATION CONFIGURATIONS FOR ABLATIONS
+# =============================================================================
+evaluation_config:
+  
+  # Metrics to track for each ablation
+  primary_metrics:
+    accuracy: ["hr@1", "hr@5", "hr@10", "hr@20", "ndcg@5", "ndcg@10", "ndcg@20"]
+    fairness: ["gini_coefficient", "coverage@20", "diversity@10", "tail_percentage@10"]
+    efficiency: ["training_time", "inference_latency", "memory_usage", "convergence_epochs"]
+  
+  # Statistical significance testing
+  significance_testing:
+    enabled: true
+    method: "wilcoxon"  # or "t_test"
+    alpha: 0.05
+    num_runs: 5  # Multiple runs for statistical reliability
+  
+  # Comparison baselines
+  baselines:
+    - "baseline_two_tower"
+    - "baseline_marl" 
+    - "neural_collaborative_filtering"
+  
+  # Cross-validation
+  cross_validation:
+    enabled: true
+    folds: 5
+    stratified: true
+
+# =============================================================================
+# EXPERIMENTAL SCHEDULE
+# =============================================================================
+experiment_schedule:
+  
+  # Phase 1: Individual components (Week 1-2)
+  phase1_individual:
+    experiments:
+      - "contextgnn_only"
+      - "gnn_comm_only"
+      - "hierarchical_only"
+      - "fair_sampling_only"
+      - "contrastive_only"
+      - "stable_rank_only"
+      - "buhs_only"
+    parallel_runs: 3
+    estimated_time: "2 weeks"
+  
+  # Phase 2: Component combinations (Week 3-4)
+  phase2_combinations:
+    experiments:
+      - "contextgnn_plus_gnn"
+      - "fairness_combo"
+      - "architecture_combo"
+    parallel_runs: 2
+    estimated_time: "2 weeks"
+  
+  # Phase 3: Loss function studies (Week 5)
+  phase3_losses:
+    experiments:
+      - "bpr_only"
+      - "rl_focused"
+      - "fairness_focused"
+      - "balanced_losses"
+    parallel_runs: 4
+    estimated_time: "1 week"
+  
+  # Phase 4: Hyperparameter sensitivity (Week 6-7)
+  phase4_hyperparams:
+    experiments: "hyperparameter_studies"
+    parallel_runs: 8
+    estimated_time: "2 weeks"
+  
+  # Phase 5: Full system validation (Week 8)
+  phase5_full:
+    experiments:
+      - "full_system"
+    num_runs: 10  # Multiple runs for robust results
+    estimated_time: "1 week"
+
+# =============================================================================
+# RESOURCE ALLOCATION
+# =============================================================================
+resource_management:
+  
+  # Computational resources per experiment
+  resources_per_experiment:
+    gpu_memory: "8GB"
+    cpu_cores: 4
+    estimated_runtime: "6-12 hours"
+  
+  # Parallel execution strategy
+  parallelization:
+    max_concurrent_experiments: 4
+    gpu_allocation: "round_robin"
+    cpu_allocation: "shared"
+  
+  # Result storage
+  storage:
+    results_dir: "ablation_results"
+    checkpoint_frequency: "every_epoch"
+    log_frequency: "every_100_steps"
+
+# =============================================================================
+# ANALYSIS AND REPORTING
+# =============================================================================
+analysis_config:
+  
+  # Automated analysis
+  automated_analysis:
+    component_importance: true  # Rank components by impact
+    interaction_effects: true   # Analyze component interactions
+    performance_tradeoffs: true # Accuracy vs fairness tradeoffs
+    efficiency_analysis: true   # Training/inference efficiency
+  
+  # Visualization
+  plots:
+    component_contribution: true
+    performance_radar_charts: true
+    convergence_curves: true
+    fairness_vs_accuracy_scatter: true
+    statistical_significance_heatmap: true
+  
+  # Report generation
+  reports:
+    summary_table: true
+    detailed_analysis: true
+    recommendations: true
+    future_directions: true
+
+# =============================================================================
+# SUCCESS CRITERIA
+# =============================================================================
+success_criteria:
+  
+  # Minimum performance thresholds
+  performance_thresholds:
+    hr10_improvement: 0.10  # 10% improvement over baseline
+    ndcg10_improvement: 0.10
+    gini_reduction: 0.15     # 15% reduction in GINI coefficient
+    
+  # Statistical significance requirements
+  significance_requirements:
+    p_value_threshold: 0.05
+    effect_size_threshold: 0.2  # Cohen's d
+    
+  # Robustness requirements
+  robustness:
+    consistent_across_runs: true
+    stable_hyperparameters: true
+    generalizable_improvements: true
