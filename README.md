@@ -129,7 +129,7 @@ All components are switchable via config or CLI:
 1. **Clone repository**
 
 ```
-git clone https://github.com/your-org/marl-two-tower.git
+git clone https://github.com/prateek4ai/Enhanced-MARL-Two-Tower-Recommendation-System
 cd marl-two-tower
 ```
 
@@ -242,7 +242,7 @@ If you use this work, please cite:
   author = {Prateek},
   title = {Enhanced MARL Two-Tower Recommendation System},
   year = {2025},
-  url = {https://github.com/prateek4ai/marl-two-tower}
+  url = {https://github.com/prateek4ai/Enhanced-MARL-Two-Tower-Recommendation-System}
 }
 ```
 
